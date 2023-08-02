@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -29,4 +31,6 @@ public class RegisterDTO {
     private String CPF;
     @NotNull
     private Role role;
+    @NotNull
+    private BigDecimal balance;
 }

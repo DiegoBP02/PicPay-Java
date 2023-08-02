@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.demo.ApplicationConfigTest;
+import com.example.demo.controllers.utils.TestDataBuilder;
 import com.example.demo.entities.User;
 import com.example.demo.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -32,40 +34,34 @@ class TokenServiceTest extends ApplicationConfigTest {
     @Value("${timezone.offset}")
     private String timezoneOffSet;
 
-    User USER_RECORD = User.builder()
-            .name("name")
-            .email("email")
-            .password("password")
-            .role(Role.PAYEE)
-            .CPF("cpf")
-            .build();
+    User user = TestDataBuilder.buildUser();
 
     @BeforeEach
     void setup() {
-        ReflectionTestUtils.setField(USER_RECORD, "id", UUID.randomUUID());
+        ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
     }
 
     @Test
     void create_givenUser_shouldGenerateToken() {
-        String token = tokenService.generateToken(USER_RECORD);
+        String token = tokenService.generateToken(user);
 
         assertThat(token).isNotNull();
     }
 
     @Test
     void create_givenCorrectClaims_shouldGenerateTokenWithValidClaims() {
-        String token = tokenService.generateToken(USER_RECORD);
+        String token = tokenService.generateToken(user);
 
         DecodedJWT decodedToken = JWT.decode(token);
 
-        assertThat(decodedToken.getSubject()).isEqualTo(USER_RECORD.getEmail());
+        assertThat(decodedToken.getSubject()).isEqualTo(user.getEmail());
         assertThat(decodedToken.getClaim("id").asString())
-                .isEqualTo(USER_RECORD.getId().toString());
+                .isEqualTo(user.getId().toString());
     }
 
     @Test
     void create_givenCorrectExpiration_shouldGenerateTokenWithValidClaims () {
-        String token = tokenService.generateToken(USER_RECORD);
+        String token = tokenService.generateToken(user);
 
         DecodedJWT decodedToken = JWT.decode(token);
         Date expiration = decodedToken.getExpiresAt();
@@ -81,7 +77,7 @@ class TokenServiceTest extends ApplicationConfigTest {
 
     @Test
     void create_givenCorrectSignature_shouldGenerateTokenWithValidClaims() {
-        String token = tokenService.generateToken(USER_RECORD);
+        String token = tokenService.generateToken(user);
 
         Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
         JWTVerifier verifier = JWT.require(algorithm).build();
@@ -92,14 +88,14 @@ class TokenServiceTest extends ApplicationConfigTest {
     void getSubject_givenUser_shouldReturnTheSubject() {
         String token = JWT.create()
                 .withIssuer("JWT Issuer")
-                .withSubject(USER_RECORD.getEmail())
-                .withClaim("id", USER_RECORD.getId().toString())
+                .withSubject(user.getEmail())
+                .withClaim("id", user.getId().toString())
                 .withExpiresAt(LocalDateTime.now()
                         .plusDays(1)
                         .toInstant(ZoneOffset.of(timezoneOffSet))
                 ).sign(Algorithm.HMAC256(jwtSecret));
 
         String retrievedSubject = tokenService.getSubject(token);
-        assertThat(retrievedSubject).isEqualTo(USER_RECORD.getEmail());
+        assertThat(retrievedSubject).isEqualTo(user.getEmail());
     }
 }

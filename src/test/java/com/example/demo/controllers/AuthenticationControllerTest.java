@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import com.example.demo.ApplicationConfigTest;
+import com.example.demo.controllers.utils.TestDataBuilder;
 import com.example.demo.dtos.LoginDTO;
 import com.example.demo.dtos.RegisterDTO;
 import com.example.demo.entities.User;
@@ -18,39 +19,25 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class AuthenticationControllerTest extends ApplicationConfigTest {
     private static final String PATH = "/auth";
 
-    User USER_RECORD = User.builder()
-            .name("name")
-            .email("email")
-            .password("password")
-            .role(Role.PAYEE)
-            .CPF("cpf")
-            .build();
-    RegisterDTO REGISTER_DTO_RECORD = RegisterDTO.builder()
-            .name("name")
-            .email("email@email.com")
-            .password("password")
-            .role(Role.PAYEE)
-            .CPF("01234567890")
-            .build();
-    LoginDTO LOGIN_DTO_RECORD = LoginDTO.builder()
-            .email("email@email.com")
-            .password("password")
-            .build();
     @MockBean
     private AuthenticationService authenticationService;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+
+    RegisterDTO registerDto = TestDataBuilder.buildRegisterDTO();
+    LoginDTO loginDto = TestDataBuilder.buildLoginDTO();
 
     @Test
     void register_givenValidUser_shouldReturnToken() throws Exception {
@@ -60,7 +47,7 @@ class AuthenticationControllerTest extends ApplicationConfigTest {
                 .post(PATH + "/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(REGISTER_DTO_RECORD));
+                .content(this.objectMapper.writeValueAsString(registerDto));
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isOk())
@@ -70,7 +57,7 @@ class AuthenticationControllerTest extends ApplicationConfigTest {
     }
 
     @Test
-    void register_givenInvalidBody_shouldThrowMethodArgumentNotValidException() throws Exception {
+    void register_givenInvalidBody_shouldHandleMethodArgumentNotValidException() throws Exception {
         RegisterDTO registerDTO = new RegisterDTO();
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
@@ -89,7 +76,7 @@ class AuthenticationControllerTest extends ApplicationConfigTest {
     }
 
     @Test
-    void register_givenUserAlreadyExists_shouldThrowUniqueConstraintViolationError()
+    void register_givenUserAlreadyExists_shouldHandleUniqueConstraintViolationError()
             throws Exception {
         when(authenticationService.register(any(RegisterDTO.class)))
                 .thenThrow(UniqueConstraintViolationError.class);
@@ -98,7 +85,7 @@ class AuthenticationControllerTest extends ApplicationConfigTest {
                 .post(PATH + "/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(REGISTER_DTO_RECORD));
+                .content(this.objectMapper.writeValueAsString(registerDto));
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isBadRequest())
@@ -117,7 +104,7 @@ class AuthenticationControllerTest extends ApplicationConfigTest {
                 .post(PATH + "/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(LOGIN_DTO_RECORD));
+                .content(this.objectMapper.writeValueAsString(loginDto));
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isOk())
@@ -127,7 +114,7 @@ class AuthenticationControllerTest extends ApplicationConfigTest {
     }
 
     @Test
-    void login_givenInvalidBody_shouldThrowMethodArgumentNotValidException() throws Exception {
+    void login_givenInvalidBody_shouldHandleMethodArgumentNotValidException() throws Exception {
         LoginDTO loginDTO = new LoginDTO();
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders

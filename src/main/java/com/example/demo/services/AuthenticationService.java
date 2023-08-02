@@ -39,14 +39,15 @@ public class AuthenticationService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Email not found: " + email));
     }
 
-    public String register(RegisterDTO register) {
+    public String register(RegisterDTO registerDTO) {
         try {
             User user = User.builder()
-                    .name(register.getName())
-                    .email(register.getEmail())
-                    .password(passwordEncoder.encode(register.getPassword()))
-                    .CPF(register.getCPF())
-                    .role(register.getRole())
+                    .name(registerDTO.getName())
+                    .email(registerDTO.getEmail())
+                    .password(passwordEncoder.encode(registerDTO.getPassword()))
+                    .CPF(registerDTO.getCPF())
+                    .role(registerDTO.getRole())
+                    .balance(registerDTO.getBalance())
                     .build();
             userRepository.save(user);
             return tokenService.generateToken(user);
@@ -55,9 +56,10 @@ public class AuthenticationService implements UserDetailsService {
         }
     }
 
-    public String login(LoginDTO login) {
+    public String login(LoginDTO loginDTO) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword());
+                new UsernamePasswordAuthenticationToken
+                        (loginDTO.getEmail(), loginDTO.getPassword());
 
         Authentication authentication = this.authenticationManager.authenticate
                 (usernamePasswordAuthenticationToken);

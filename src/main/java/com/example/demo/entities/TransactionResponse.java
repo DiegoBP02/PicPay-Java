@@ -1,0 +1,19 @@
+package com.example.demo.entities;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class TransactionResponse {
+    private BigDecimal userBalance;
+    private BigDecimal payeeBalance;
+    private BigDecimal amountTransferred;
+    private String emailResponse;
+}
