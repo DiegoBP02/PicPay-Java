@@ -34,7 +34,7 @@ public class TransactionsService {
 
         User user = getCurrentUser();
 
-        if (user.getId().equals(payeeId)){
+        if (user.getId().equals(payeeId)) {
             throw new SelfTransferException();
         }
 
@@ -42,12 +42,12 @@ public class TransactionsService {
                 .orElseThrow(() -> new ResourceNotFoundException(payeeId));
         transferMoney(user, payee, amount);
 
-        if(!apiService.isTransferAuthorized()){
+        if (!apiService.isTransferAuthorized()) {
             throw new TransferNotAuthorizedException();
         }
 
         String emailResponseMessage = "Email sent successfully to the user.";
-        if(!apiService.isEmailSentSuccessfully()){
+        if (!apiService.isEmailSentSuccessfully()) {
             emailResponseMessage = "There was an issue with the email service. " +
                     "The email will be sent later.";
         }
@@ -65,7 +65,7 @@ public class TransactionsService {
     }
 
     private void transferMoney(User payer, User payee, BigDecimal amount) {
-        if (payer.getBalance().compareTo(amount) < 0){
+        if (payer.getBalance().compareTo(amount) < 0) {
             throw new InsufficientBalanceException(payer.getBalance());
         }
         payer.setBalance(payer.getBalance().subtract(amount));

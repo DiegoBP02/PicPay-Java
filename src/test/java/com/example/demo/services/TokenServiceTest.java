@@ -7,20 +7,19 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.demo.ApplicationConfigTest;
 import com.example.demo.controllers.utils.TestDataBuilder;
 import com.example.demo.entities.User;
-import com.example.demo.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 class TokenServiceTest extends ApplicationConfigTest {
 
@@ -60,7 +59,7 @@ class TokenServiceTest extends ApplicationConfigTest {
     }
 
     @Test
-    void create_givenCorrectExpiration_shouldGenerateTokenWithValidClaims () {
+    void create_givenCorrectExpiration_shouldGenerateTokenWithValidClaims() {
         String token = tokenService.generateToken(user);
 
         DecodedJWT decodedToken = JWT.decode(token);

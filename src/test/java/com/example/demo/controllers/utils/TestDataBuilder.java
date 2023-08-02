@@ -52,20 +52,21 @@ public class TestDataBuilder {
                 .build();
     }
 
-    public static TransactionPayload buildTransactionPayload(){
+    public static TransactionPayload buildTransactionPayload() {
         return TransactionPayload.builder()
                 .payeeId(UUID.randomUUID())
                 .amount(BigDecimal.valueOf(10))
                 .build();
     }
-    public static TransactionPayload buildTransactionPayload(UUID userId){
+
+    public static TransactionPayload buildTransactionPayload(UUID userId) {
         return TransactionPayload.builder()
                 .payeeId(userId)
                 .amount(BigDecimal.valueOf(10))
                 .build();
     }
 
-    public static TransactionResponse buildTransactionResponse(){
+    public static TransactionResponse buildTransactionResponse() {
         return TransactionResponse.builder()
                 .userBalance(BigDecimal.valueOf(100))
                 .payeeBalance(BigDecimal.valueOf(50))

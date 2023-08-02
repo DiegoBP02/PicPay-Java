@@ -4,16 +4,11 @@ import com.example.demo.ApplicationConfigTest;
 import com.example.demo.controllers.utils.TestDataBuilder;
 import com.example.demo.entities.APIResponse;
 import com.example.demo.entities.User;
-import com.example.demo.enums.Role;
 import com.example.demo.exceptions.ApiErrorException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
-
-import java.math.BigDecimal;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

@@ -1,15 +1,11 @@
 package com.example.demo.services;
 
 import com.example.demo.ApplicationConfigTest;
-import com.example.demo.entities.APIResponse;
-import com.example.demo.exceptions.ApiErrorException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class APIServiceIntegrationTest extends ApplicationConfigTest {
 

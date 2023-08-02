@@ -1,14 +1,11 @@
 package com.example.demo.services;
 
 import com.example.demo.entities.APIResponse;
-import com.example.demo.entities.User;
 import com.example.demo.exceptions.ApiErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.util.Objects;
 
 @Service

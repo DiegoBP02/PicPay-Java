@@ -1,34 +1,32 @@
 package com.example.demo.controllers;
 
-        import com.example.demo.ApplicationConfigTest;
-        import com.example.demo.controllers.utils.TestDataBuilder;
-        import com.example.demo.entities.TransactionPayload;
-        import com.example.demo.entities.TransactionResponse;
-        import com.example.demo.enums.Role;
-        import com.example.demo.exceptions.ApiErrorException;
-        import com.example.demo.exceptions.ResourceNotFoundException;
-        import com.example.demo.exceptions.SelfTransferException;
-        import com.example.demo.exceptions.TransferNotAuthorizedException;
-        import com.example.demo.services.TransactionsService;
-        import com.fasterxml.jackson.databind.ObjectMapper;
-        import org.junit.jupiter.api.Test;
-        import org.springframework.beans.factory.annotation.Autowired;
-        import org.springframework.boot.test.mock.mockito.MockBean;
-        import org.springframework.http.MediaType;
-        import org.springframework.security.access.AccessDeniedException;
-        import org.springframework.test.web.servlet.MockMvc;
-        import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-        import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-        import org.springframework.security.test.context.support.WithMockUser;
-        import org.springframework.web.bind.MethodArgumentNotValidException;
+import com.example.demo.ApplicationConfigTest;
+import com.example.demo.controllers.utils.TestDataBuilder;
+import com.example.demo.entities.TransactionPayload;
+import com.example.demo.entities.TransactionResponse;
+import com.example.demo.exceptions.ApiErrorException;
+import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.SelfTransferException;
+import com.example.demo.exceptions.TransferNotAuthorizedException;
+import com.example.demo.services.TransactionsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
-        import java.math.BigDecimal;
-        import java.util.UUID;
-
-        import static org.junit.jupiter.api.Assertions.*;
-        import static org.mockito.ArgumentMatchers.any;
-        import static org.mockito.Mockito.*;
-        import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class TransactionsControllerTest extends ApplicationConfigTest {
     private static final String PATH = "/transactions";
@@ -44,16 +42,23 @@ class TransactionsControllerTest extends ApplicationConfigTest {
 
     TransactionResponse transactionResponse = TestDataBuilder.buildTransactionResponse();
 
+    private MockHttpServletRequestBuilder buildMockRequestPost
+            (String endpoint, Object requestObject) throws Exception {
+        return MockMvcRequestBuilders
+                .post(PATH + endpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(requestObject));
+    }
+
     @Test
     @WithMockUser(authorities = "USER")
     void processTransaction_givenSuccessfulTransaction_shouldReturnTransactionResponse() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenReturn(transactionResponse);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isOk())
@@ -69,11 +74,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
         TransactionPayload transactionPayload = new TransactionPayload();
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenReturn(transactionResponse);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isBadRequest())
@@ -89,11 +92,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
     void processTransaction_givenNoUser_shouldReturnStatus403Forbidden() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenReturn(transactionResponse);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isForbidden())
@@ -110,11 +111,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
     void processTransaction_givenInvalidUserAuthority_shouldReturn401Unauthorized() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenReturn(transactionResponse);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isUnauthorized())
@@ -131,11 +130,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
     void processTransaction_givenSelfTransferError_shouldHandleSelfTransferException() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenThrow(SelfTransferException.class);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isBadRequest())
@@ -152,11 +149,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
     void processTransaction_givenUserNotFound_shouldHandleResourceNotFoundException() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenThrow(ResourceNotFoundException.class);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isNotFound())
@@ -173,11 +168,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
     void processTransaction_givenTransferIsNotAuthorized_shouldHandleTransferNotAuthorizedException() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenThrow(TransferNotAuthorizedException.class);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isForbidden())
@@ -194,11 +187,9 @@ class TransactionsControllerTest extends ApplicationConfigTest {
     void processTransaction_givenAPIResponseIsNull_shouldHandleApiErrorException() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenThrow(ApiErrorException.class);
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post(PATH + "/payment")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        MockHttpServletRequestBuilder mockRequest = buildMockRequestPost
+                ("/payment", transactionPayload);
 
         mockMvc.perform(mockRequest)
                 .andExpect(status().isInternalServerError())
