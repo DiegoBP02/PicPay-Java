@@ -5,6 +5,7 @@ import com.example.demo.entities.TransactionResponse;
 import com.example.demo.entities.User;
 import com.example.demo.exceptions.InsufficientBalanceException;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.SelfTransferException;
 import com.example.demo.exceptions.TransferNotAuthorizedException;
 import com.example.demo.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -31,9 +32,14 @@ public class TransactionsService {
         UUID payeeId = transactionPayload.getPayeeId();
         BigDecimal amount = transactionPayload.getAmount();
 
+        User user = getCurrentUser();
+
+        if (user.getId().equals(payeeId)){
+            throw new SelfTransferException();
+        }
+
         User payee = userRepository.findById(payeeId)
                 .orElseThrow(() -> new ResourceNotFoundException(payeeId));
-        User user = getCurrentUser();
         transferMoney(user, payee, amount);
 
         if(!apiService.isTransferAuthorized()){

@@ -7,6 +7,7 @@ import com.example.demo.entities.TransactionResponse;
 import com.example.demo.entities.User;
 import com.example.demo.exceptions.InsufficientBalanceException;
 import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.SelfTransferException;
 import com.example.demo.exceptions.TransferNotAuthorizedException;
 import com.example.demo.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +66,14 @@ class TransactionsServiceTest extends ApplicationConfigTest {
         assertEquals(targetUser.getBalance(), result.getPayeeBalance());
         assertEquals(transactionPayload.getAmount(), result.getAmountTransferred());
         assertNotNull(result.getEmailResponse());
+    }
+
+    @Test
+    void processTransaction_whenUserTransferToHimself_shouldThrowSelfTransferException() {
+        transactionPayload.setPayeeId(sourceUser.getId());
+
+        assertThrows(SelfTransferException.class, () ->
+                transactionsService.processTransaction(transactionPayload));
     }
 
     @Test

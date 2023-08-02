@@ -143,4 +143,14 @@ public class ExceptionHandlers {
         return ResponseEntity.status(status).body(err);
     }
 
+    @ExceptionHandler(SelfTransferException.class)
+    public ResponseEntity<StandardError> selfTransferException(
+            SelfTransferException e, HttpServletRequest request) {
+        String error = "Self transfer error";
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        StandardError err = new StandardError(Instant.now(), status.value(), error,
+                e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
 }

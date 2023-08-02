@@ -7,6 +7,7 @@ package com.example.demo.controllers;
         import com.example.demo.enums.Role;
         import com.example.demo.exceptions.ApiErrorException;
         import com.example.demo.exceptions.ResourceNotFoundException;
+        import com.example.demo.exceptions.SelfTransferException;
         import com.example.demo.exceptions.TransferNotAuthorizedException;
         import com.example.demo.services.TransactionsService;
         import com.fasterxml.jackson.databind.ObjectMapper;
@@ -127,6 +128,27 @@ class TransactionsControllerTest extends ApplicationConfigTest {
 
     @Test
     @WithMockUser(authorities = "USER")
+    void processTransaction_givenSelfTransferError_shouldHandleSelfTransferException() throws Exception {
+        when(transactionsService.processTransaction(any(TransactionPayload.class)))
+                .thenThrow(SelfTransferException.class);
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
+                .post(PATH + "/payment")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionPayload));
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isBadRequest())
+                .andExpect(result ->
+                        assertTrue(result.getResolvedException()
+                                instanceof SelfTransferException));
+
+        verify(transactionsService, times(1))
+                .processTransaction(any(TransactionPayload.class));
+    }
+
+    @Test
+    @WithMockUser(authorities = "USER")
     void processTransaction_givenUserNotFound_shouldHandleResourceNotFoundException() throws Exception {
         when(transactionsService.processTransaction(any(TransactionPayload.class)))
                 .thenThrow(ResourceNotFoundException.class);
@@ -187,4 +209,5 @@ class TransactionsControllerTest extends ApplicationConfigTest {
         verify(transactionsService, times(1))
                 .processTransaction(any(TransactionPayload.class));
     }
+
 }
